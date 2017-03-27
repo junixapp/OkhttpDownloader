@@ -7,7 +7,7 @@ a multi-thread downloader for okhttp!
 
 [![](https://jitpack.io/v/li-xiaojun/OkhttpDownloader.svg)](https://jitpack.io/#li-xiaojun/OkhttpDownloader)
 
-Step 1.** Add the JitPack repository to your build file
+**Step 1.** Add the JitPack repository to your build file
 
 ```groovy
 allprojects {
