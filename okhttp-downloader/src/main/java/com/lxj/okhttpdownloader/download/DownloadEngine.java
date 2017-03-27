@@ -18,14 +18,15 @@ import java.util.List;
  */
 public class DownloadEngine {
 
+    //define state var.
     public static final int STATE_NONE = 0;//未下载
     public static final int STATE_DOWNLOADING = 1;//下载中
     public static final int STATE_PAUSE = 2;//暂停
     public static final int STATE_FINISH = 3;//下载完成
     public static final int STATE_ERROR = 4;//下载出错
-    public static final int STATE_WAITING = 5;//等待中，任务创建并添加到线程池，但是run方法没有执行
+    public static final int STATE_WAITING = 5;//等待中
 
-    //用来存放所有的DownloadObserver对象, key:taskId   val:all observers
+    //key:taskId   val:all observers
     private HashMap<String, ArrayList<DownloadObserver>> observerMap = new HashMap<>();
 
     //store DownloadInfo in memery，
@@ -37,8 +38,8 @@ public class DownloadEngine {
 
     private DownloadEngine(Context context) {
         downloadInfoDao = new DownloadInfoDao(context);
-        //从本地读取数据
-        initDownloadInfo();
+        //read downloadInfoMap
+        initDownloadInfoMap();
     }
 
     public static DownloadEngine create(Context context) {
@@ -52,7 +53,7 @@ public class DownloadEngine {
         return mInstance;
     }
 
-    private void initDownloadInfo() {
+    private void initDownloadInfoMap() {
         List<DownloadInfo> list = downloadInfoDao.getAllDownloadInfos();
         if (list != null) {
             for (DownloadInfo downloadInfo : list) {
@@ -63,6 +64,13 @@ public class DownloadEngine {
         L.d("init downloadinfo from db , get " + (list == null ? 0 : list.size()) + " downloadinfo!");
     }
 
+    /**
+     * 设置最大同时执行的任务数量
+     * @param taskCount
+     */
+    public void setMaxTaskCount(int taskCount){
+        ThreadPoolManager.getInstance().setCorePoolSize(taskCount);
+    }
 
     /**
      * 获取指定任务的下载状态
@@ -76,15 +84,17 @@ public class DownloadEngine {
     }
 
     /**
-     * 下载的方法
+     * 下载任务的方法
+     * @param taskId    任务id，需要外界维护和提供
+     * @param downloadUrl   完整下载地址
+     * @param savePath      文件保存路径
      */
     public void download(String taskId, String downloadUrl, String savePath) {
         L.d("download called! \ntaskId: " + taskId + "\n downloadUrl: " + downloadUrl
                 + " \nsavePath: " + savePath);
-        //先从map中取
         DownloadInfo downloadInfo = downloadInfoMap.get(taskId);
         if (downloadInfo == null) {
-            //说明从来没有下载过，那么则创建downloadInfo，并存起来
+            //first download.
             downloadInfo = DownloadInfo.create(taskId, downloadUrl, savePath);
             downloadInfoMap.put(taskId, downloadInfo);
         } else {
@@ -93,19 +103,15 @@ public class DownloadEngine {
         //addToDb
         saveDownloadInfo(downloadInfo);
 
-        //2.此时的任务有可能没有下载过，也有可能下载过一半，也有可能下载完，所以我们应该根据state来判断操作
-        //只有在3种状态下才能开始下载：未下载， 暂停，下载失败，
+        //2.only three states allow download.
         if (downloadInfo.state == STATE_NONE || downloadInfo.state == STATE_PAUSE
                 || downloadInfo.state == STATE_ERROR) {
-            //3.可以进行下载,创建下载任务，添加到线程池中
             DownloadTask downloadTask = new DownloadTask(this, downloadInfo);
 
-            //将downloadInfo的state设置等待中
+            //set state  waitting
             downloadInfo.state = STATE_WAITING;
-            //将状态变化通知给外界的监听器
             notifyDownloadUpdate(downloadInfo);
 
-            //交给线程池管理
             ThreadPoolManager.getInstance().execute(downloadTask);
             L.d("enqueue download task into thread pool!");
         } else {
@@ -127,7 +133,7 @@ public class DownloadEngine {
     }
 
     /**
-     * 通知所有的监听器状态更改了
+     * 通知所有的监听器下载更新
      *
      * @param downloadInfo
      */
@@ -203,13 +209,7 @@ public class DownloadEngine {
         }
     }
 
-    /**
-     * 定义下载监听器，目的是暴露自己下载的状态和进度
-     */
     public interface DownloadObserver {
-        /**
-         * 当下载状态改变，包括进度改变
-         */
         void onDownloadUpdate(DownloadInfo downloadInfo);
     }
 

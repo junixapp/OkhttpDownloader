@@ -19,30 +19,32 @@ public class ThreadPoolManager {
 	int corePoolSize;
 	int maximumPoolSize;
 	long keepAliveTime = 2;
-	TimeUnit unit = TimeUnit.HOURS;//时间单位
+	TimeUnit unit = TimeUnit.HOURS;
 	BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>();
-	//如果任务数量超过maximumPoolSize，那么我是拒绝执行的
 	RejectedExecutionHandler  handler = new ThreadPoolExecutor.AbortPolicy();
 	
 	public static ThreadPoolManager getInstance() {
 		return mInstance;
 	}
 	private ThreadPoolManager() {
-		//1.使用java封装好的线程
-		//计算corePoolSize的算法:设备的可用处理器核心数*2 + 1，能够让cpu的效率得到最大发挥
+		//calculate corePoolSize, which is the same to AsyncTask.
 		corePoolSize = Runtime.getRuntime().availableProcessors()*2 + 1;
 		
 		maximumPoolSize = corePoolSize;
-		//2.使用可以自定义的线程池
+		//we custom the threadpool.
 		executor = new ThreadPoolExecutor(
-				corePoolSize, //3
-				maximumPoolSize, //5
+				corePoolSize, //is 3 in avd.
+				maximumPoolSize, //which is unuseless
 				keepAliveTime, 
 				unit, 
 				workQueue, 
 				Executors.defaultThreadFactory(), 
 				handler
 				);
+	}
+
+	public void setCorePoolSize(int size){
+		this.corePoolSize = size;
 	}
 	
 	/**

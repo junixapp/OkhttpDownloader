@@ -29,37 +29,35 @@ class DownloadTask implements Runnable{
     @Override
     public void run() {
         L.d("start downloading...");
-        //4.只要run方法一执行，那么久将状态设置下载中
+        //set state downloading.
         downloadInfo.state = DownloadEngine.STATE_DOWNLOADING;
-        //状态更改，就要通知外界
         engine.notifyDownloadUpdate(downloadInfo);
 
-        //5.进行下载，下载分为2种：a.从头下载    b.断点下载
+        //consider 2 cases: normal download and break download
         File file = new File(downloadInfo.path);
         if(!file.exists() || file.length()!=downloadInfo.currentLength) {
-            //从头下载或者下载有误
-            file.delete();//删除无效文件
-            downloadInfo.currentLength = 0;//清空currentLength
+            file.delete();//delete invalid file
+            downloadInfo.currentLength = 0;//reset currentLength
         }
+
+        //request file from url
         InputStream is = httpStack.download(downloadInfo.downloadUrl);
         downloadInfo.size = httpStack.getContentLength();
 
-        //6.对httpResult进行处理
+        //6.process io
         if(is!=null){
-            //说明请求文件成功，可以进行读写了
             FileOutputStream fos = null;
             try {
                 fos = new FileOutputStream(file, true);
-                byte[] buffer = new byte[1024*8];//8k的缓冲区
+                byte[] buffer = new byte[1024*8];
                 int len = -1;
                 while(downloadInfo.state==DownloadEngine.STATE_DOWNLOADING && downloadInfo.currentLength<downloadInfo.size
                       &&downloadInfo.size>0 && (len=is.read(buffer))!=-1){
                     fos.write(buffer, 0, len);
-                    //更新下载进度
-                    downloadInfo.currentLength += len;
-                    //通知外界监听器进度更新
-                    engine.notifyDownloadUpdate(downloadInfo);
 
+                    downloadInfo.currentLength += len;
+
+                    engine.notifyDownloadUpdate(downloadInfo);
                     engine.updateDownloadInfo(downloadInfo);
                 }
             } catch (Exception e) {
@@ -72,11 +70,10 @@ class DownloadTask implements Runnable{
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                //7.走到这里有2种情况：a.下载完成  b.暂停
+                //when code come to here, there are 2 cases: download finised and pause
                 if(file.length()==downloadInfo.size
                         && downloadInfo.currentLength==downloadInfo.size
                         && downloadInfo.state==DownloadEngine.STATE_DOWNLOADING){
-                    //说明下载完成了
                     downloadInfo.state = DownloadEngine.STATE_FINISH;
                 }
                 engine.notifyDownloadUpdate(downloadInfo);
@@ -84,13 +81,12 @@ class DownloadTask implements Runnable{
                 L.d("download task is over: "+downloadInfo.toString());
             }
         }else {
-            //说明请求失败，
             processErrerState();
         }
     }
 
     /**
-     * 处理下载失败的状态
+     * process error state
      */
     public void processErrerState() {
         downloadInfo.state = DownloadEngine.STATE_ERROR;
