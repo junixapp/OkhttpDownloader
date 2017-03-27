@@ -6,6 +6,7 @@ import android.os.Looper;
 
 import com.lxj.okhttpdownloader.db.DownloadInfoDao;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -128,8 +129,24 @@ public class DownloadEngine {
         downloadInfoDao.update(downloadInfo);
     }
 
+    /**
+     * 删除下载的文件，同时删除数据库记录和文件
+     * @param downloadInfo
+     */
     public void deleteDownloadInfo(DownloadInfo downloadInfo) {
+        //pause first.
+        pause(downloadInfo.taskId);
+
         downloadInfoDao.delete(downloadInfo);
+        //delete file
+        new File(downloadInfo.path).delete();
+    }
+
+    public void deleteDownloadInfo(String taskId) {
+        DownloadInfo downloadInfo = getDownloadInfo(taskId);
+        if(downloadInfo!=null){
+            deleteDownloadInfo(downloadInfo);
+        }
     }
 
     /**
