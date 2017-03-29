@@ -30,11 +30,11 @@ dependencies {
 
 # Screenshot
 
-![1](screenshot\1.gif)
+![/li-xiaojun/OkhttpDownloader/blob/master/screenshot/1.gif?raw=true]()
 
 
 
-![2](screenshot\2.gif)
+
 
 # Feature
 
