@@ -30,9 +30,9 @@ dependencies {
 
 # Screenshot
 
-![/li-xiaojun/OkhttpDownloader/blob/master/screenshot/1.gif?raw=true]()
+![1](\screenshot\1.gif)
 
-
+![2](\screenshot\2.gif)
 
 
 
