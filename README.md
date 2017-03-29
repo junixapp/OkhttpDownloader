@@ -30,11 +30,11 @@ dependencies {
 
 # Screenshot
 
-![1](.\screenshot\1.gif)
+![1](screenshot\1.gif)
 
 
 
-![2](.\screenshot\2.gif)
+![2](screenshot\2.gif)
 
 # Feature
 
