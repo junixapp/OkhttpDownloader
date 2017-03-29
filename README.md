@@ -28,7 +28,13 @@ dependencies {
 
 
 
+# Screenshot
 
+![1](.\screenshot\1.gif)
+
+
+
+![2](.\screenshot\2.gif)
 
 # Feature
 
@@ -45,6 +51,7 @@ dependencies {
 - 下载方法：
 
   ```java
+  //需要自己维护任务id
   DownloadEngine.create(this).download(taskId, url, path);
   ```
 
@@ -68,7 +75,7 @@ dependencies {
               @Override
               public void onDownloadUpdate(DownloadInfo downloadInfo) {
               }
-          });
+          },taskId...);
   //移除
   DownloadEngine.create(this).removeDownloadObserver(this);
   ```
