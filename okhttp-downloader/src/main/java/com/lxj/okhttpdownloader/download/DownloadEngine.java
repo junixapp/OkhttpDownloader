@@ -59,7 +59,7 @@ public class DownloadEngine {
         if (list != null) {
             for (DownloadInfo downloadInfo : list) {
                 downloadInfoMap.put(downloadInfo.taskId, downloadInfo);
-                L.d("db downloadinfo: "+downloadInfo.toString());
+                L.d("db downloadinfo: " + downloadInfo.toString());
             }
         }
         L.d("init downloadinfo from db , get " + (list == null ? 0 : list.size()) + " downloadinfo!");
@@ -67,9 +67,10 @@ public class DownloadEngine {
 
     /**
      * 设置最大同时执行的任务数量
+     *
      * @param taskCount
      */
-    public void setMaxTaskCount(int taskCount){
+    public void setMaxTaskCount(int taskCount) {
         ThreadPoolManager.getInstance().setCorePoolSize(taskCount);
     }
 
@@ -86,9 +87,10 @@ public class DownloadEngine {
 
     /**
      * 下载任务的方法
-     * @param taskId    任务id，需要外界维护和提供
-     * @param downloadUrl   完整下载地址
-     * @param savePath      文件保存路径
+     *
+     * @param taskId      任务id，需要外界维护和提供
+     * @param downloadUrl 完整下载地址
+     * @param savePath    文件保存路径
      */
     public void download(String taskId, String downloadUrl, String savePath) {
         L.d("download called! \ntaskId: " + taskId + "\n downloadUrl: " + downloadUrl
@@ -131,6 +133,7 @@ public class DownloadEngine {
 
     /**
      * 删除下载的文件，同时删除数据库记录和文件
+     *
      * @param downloadInfo
      */
     public void deleteDownloadInfo(DownloadInfo downloadInfo) {
@@ -144,7 +147,7 @@ public class DownloadEngine {
 
     public void deleteDownloadInfo(String taskId) {
         DownloadInfo downloadInfo = getDownloadInfo(taskId);
-        if(downloadInfo!=null){
+        if (downloadInfo != null) {
             deleteDownloadInfo(downloadInfo);
         }
     }
@@ -186,18 +189,15 @@ public class DownloadEngine {
      *
      * @param observer
      */
-    public void addDownloadObserver(DownloadObserver observer, String... taskIds) {
-        if (taskIds == null || taskIds.length == 0 || observer == null) return;
-        for (int i = 0; i < taskIds.length; i++) {
-            String id = taskIds[i];
-            ArrayList<DownloadObserver> list = observerMap.get(id);
-            if (list == null) {
-                list = new ArrayList<>();
-            }
-            list.add(observer);
-            observerMap.put(id, list);
-            L.d("add observer successfully!");
+    public void addDownloadObserver(DownloadObserver observer, String taskId) {
+        if (taskId == null) return;
+        ArrayList<DownloadObserver> list = observerMap.get(taskId);
+        if (list == null) {
+            list = new ArrayList<>();
         }
+        list.add(observer);
+        observerMap.put(taskId, list);
+        L.d("add observer successfully!");
     }
 
     public DownloadInfo getDownloadInfo(String taskId) {
@@ -211,17 +211,14 @@ public class DownloadEngine {
      *
      * @param observer
      */
-    public void removeDownloadObserver(DownloadObserver observer, String... taskIds) {
-        if (taskIds == null || taskIds.length == 0 || observer == null) return;
-        for (int i = 0; i < taskIds.length; i++) {
-            String id = taskIds[i];
-            if (observerMap.containsKey(id)) {
-                ArrayList<DownloadObserver> list = observerMap.get(id);
-                if (list != null) {
-                    list.remove(observer);
-                    observerMap.put(id, list);
-                    L.d("remove observer successfully!");
-                }
+    public void removeDownloadObserver(DownloadObserver observer, String taskId) {
+        if (taskId == null || observer == null) return;
+        if (observerMap.containsKey(taskId)) {
+            ArrayList<DownloadObserver> list = observerMap.get(taskId);
+            if (list != null) {
+                list.remove(observer);
+                observerMap.put(taskId, list);
+                L.d("remove observer successfully!");
             }
         }
     }
