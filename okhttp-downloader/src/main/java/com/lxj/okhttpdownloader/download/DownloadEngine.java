@@ -10,6 +10,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 下载管理类
@@ -93,12 +94,24 @@ public class DownloadEngine {
      * @param savePath    文件保存路径
      */
     public void download(String taskId, String downloadUrl, String savePath) {
+        download(taskId, downloadUrl, savePath, null);
+    }
+
+    /**
+     * 下载任务的方法
+     *
+     * @param taskId      任务id，需要外界维护和提供
+     * @param downloadUrl 完整下载地址
+     * @param savePath    文件保存路径
+     * @param headers     下载需要的文件头，不需要可以为空
+     */
+    public void download(String taskId, String downloadUrl, String savePath, Map<String,String> headers) {
         L.d("download called! \ntaskId: " + taskId + "\n downloadUrl: " + downloadUrl
                 + " \nsavePath: " + savePath);
         DownloadInfo downloadInfo = downloadInfoMap.get(taskId);
         if (downloadInfo == null) {
             //first download.
-            downloadInfo = DownloadInfo.create(taskId, downloadUrl, savePath);
+            downloadInfo = DownloadInfo.create(taskId, downloadUrl, savePath, headers);
             downloadInfoMap.put(taskId, downloadInfo);
         } else {
             downloadInfo.downloadUrl = downloadUrl;
