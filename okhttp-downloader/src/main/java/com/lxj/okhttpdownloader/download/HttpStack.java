@@ -1,5 +1,7 @@
 package com.lxj.okhttpdownloader.download;
 
+import okhttp3.Headers;
+
 import java.io.InputStream;
 
 /**
@@ -9,7 +11,7 @@ import java.io.InputStream;
 
 public interface HttpStack {
 
-    InputStream download(String downloadUrl);
+    InputStream download(String downloadUrl, Headers headers);
 
     void close();
 

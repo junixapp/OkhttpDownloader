@@ -3,11 +3,7 @@ package com.lxj.okhttpdownloader.download;
 import java.io.IOException;
 import java.io.InputStream;
 
-import okhttp3.Call;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
+import okhttp3.*;
 
 /**
  * Created by dance on 2017/3/26.
@@ -26,13 +22,15 @@ public class OkHttpStack implements HttpStack {
     public long getContentLength(){
         return contentLength;
     }
-    @Override
-    public InputStream download(String downloadUrl) {
-        Request request = new Request.Builder()
+    public InputStream download(String downloadUrl, Headers headers) {
+        Request.Builder builder = new Request.Builder();
+        if (headers!=null){
+            builder.headers(headers);
+        }
+        Request request = builder
                 .get()
                 .url(downloadUrl)
                 .build();
-
         Call call = client.newCall(request);
         try {
             Response response = call.execute();
